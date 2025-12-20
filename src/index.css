@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌍 Theme variables */
+@layer base {
+  :root {
+    --color-background: #f8fafc;
+    --color-surface: #ffffff;
+    --color-primary: #3b82f6;
+  }
+
+  .dark {
+    --color-background: #0f172a;
+    --color-surface: #1e293b;
+    --color-primary: #60a5fa;
+  }
+
+  body {
+    @apply bg-background text-slate-900 dark:text-slate-100 transition-colors duration-300;
+  }
+}
+
+/* 🎯 Cell states */
+.cell-highlight {
+  @apply bg-blue-100 dark:bg-blue-900/30;
+}
+
+.cell-selected {
+  @apply bg-blue-200 dark:bg-blue-800/50 ring-2 ring-blue-500 z-10;
+}
+
+.cell-same-value {
+  @apply bg-indigo-100 dark:bg-indigo-900/30;
+}
+
+.cell-error {
+  @apply bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 animate-shake;
+}
+
+/* 🟢 Drag & drop hover */
+.cell-drop-hover {
+  @apply bg-green-200 dark:bg-green-800/40;
+}
+
+/* ✨ Placement animation */
+.cell-pop {
+  animation: pop 0.2s ease-out;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ❌ Error shake animation */
+@keyframes shake {
+  10%, 90% {
+    transform: translateX(-1px);
+  }
+  20%, 80% {
+    transform: translateX(2px);
+  }
+  30%, 50%, 70% {
+    transform: translateX(-4px);
+  }
+  40%, 60% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
