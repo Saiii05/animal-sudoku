@@ -7,6 +7,7 @@ import { AnimalSelector } from './components/AnimalSelector';
 import { ShareModal } from './components/ShareModal';
 import { Moon, Sun, Volume2, VolumeX, Share2, Plus } from 'lucide-react';
 import { Difficulty } from './types';
+import { Scoreboard} from './components/ScoreBoard';
 
 const GameContainer: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -156,6 +157,7 @@ const App: React.FC = () => (
   <SoundProvider>
     <GameProvider>
       <GameContainer />
+	<ScoreBoard />
     </GameProvider>
   </SoundProvider>
 );

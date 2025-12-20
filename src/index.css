@@ -2,56 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme */
-@layer base {
-  :root {
-    --color-background: #f8fafc;
-    --color-surface: #ffffff;
-    --color-primary: #3b82f6;
-  }
-
-  .dark {
-    --color-background: #0f172a;
-    --color-surface: #1e293b;
-    --color-primary: #60a5fa;
-  }
-
-  body {
-    @apply bg-background text-slate-900 dark:text-slate-100 transition-colors duration-300;
-  }
-}
-
-/* Cell highlights */
+/* Selection */
 .cell-selected {
-  @apply bg-blue-200 dark:bg-blue-800/60 ring-2 ring-blue-500 z-10;
+  @apply bg-blue-300 dark:bg-blue-700 ring-2 ring-blue-500 z-10;
 }
 
-.cell-peer-highlight {
-  @apply bg-indigo-100 dark:bg-indigo-900/30;
+/* Peer highlights */
+.cell-row-highlight {
+  @apply bg-blue-100 dark:bg-blue-900/40;
+}
+.cell-col-highlight {
+  @apply bg-green-100 dark:bg-green-900/40;
+}
+.cell-box-highlight {
+  @apply bg-purple-100 dark:bg-purple-900/40;
 }
 
+/* Same value */
 .cell-same-value {
-  @apply bg-purple-200 dark:bg-purple-900/40;
-}
-
-.cell-error {
-  @apply bg-red-200 dark:bg-red-900/40 text-red-600 animate-shake;
+  @apply bg-indigo-200 dark:bg-indigo-800/50;
 }
 
 /* Drag hover */
 .cell-drop-hover {
-  @apply bg-green-200 dark:bg-green-800/40;
+  @apply bg-green-300 dark:bg-green-800/50;
 }
 
-/* Shake animation */
+/* Error */
+.cell-error {
+  @apply bg-red-300 dark:bg-red-900/60 text-red-700;
+}
+
+/* Animations */
+@keyframes boxPulse {
+  0% { box-shadow: inset 0 0 0 0 rgba(139,92,246,0.4); }
+  50% { box-shadow: inset 0 0 0 4px rgba(139,92,246,0.4); }
+  100% { box-shadow: inset 0 0 0 0 rgba(139,92,246,0.4); }
+}
+.animate-box {
+  animation: boxPulse 1.5s infinite;
+}
+
 @keyframes shake {
   10%, 90% { transform: translateX(-1px); }
   20%, 80% { transform: translateX(2px); }
   30%, 50%, 70% { transform: translateX(-4px); }
   40%, 60% { transform: translateX(4px); }
 }
-
 .animate-shake {
-  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97);
+  animation: shake 0.4s;
 }
 
