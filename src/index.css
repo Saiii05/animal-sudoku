@@ -1,55 +1,47 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Selection */
-.cell-selected {
-  @apply bg-blue-300 dark:bg-blue-700 ring-2 ring-blue-500 z-10;
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Peer highlights */
-.cell-row-highlight {
-  @apply bg-blue-100 dark:bg-blue-900/40;
-}
-.cell-col-highlight {
-  @apply bg-green-100 dark:bg-green-900/40;
-}
-.cell-box-highlight {
-  @apply bg-purple-100 dark:bg-purple-900/40;
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  width: 360px;
+  border: 2px solid #1e293b;
 }
 
-/* Same value */
-.cell-same-value {
-  @apply bg-indigo-200 dark:bg-indigo-800/50;
+.cell {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border: 1px solid #cbd5e1;
 }
 
-/* Drag hover */
-.cell-drop-hover {
-  @apply bg-green-300 dark:bg-green-800/50;
+.cell-row { background: #dbeafe; }
+.cell-col { background: #dcfce7; }
+.cell-box {
+  background: #f3e8ff;
+  animation: pulse 1.4s infinite;
+}
+.cell-error { background: #fecaca; }
+.cell-given { font-weight: bold; }
+
+@keyframes pulse {
+  0% { box-shadow: inset 0 0 0 0 rgba(168,85,247,.4); }
+  50% { box-shadow: inset 0 0 0 4px rgba(168,85,247,.4); }
+  100% { box-shadow: inset 0 0 0 0 rgba(168,85,247,.4); }
 }
 
-/* Error */
-.cell-error {
-  @apply bg-red-300 dark:bg-red-900/60 text-red-700;
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
 }
-
-/* Animations */
-@keyframes boxPulse {
-  0% { box-shadow: inset 0 0 0 0 rgba(139,92,246,0.4); }
-  50% { box-shadow: inset 0 0 0 4px rgba(139,92,246,0.4); }
-  100% { box-shadow: inset 0 0 0 0 rgba(139,92,246,0.4); }
-}
-.animate-box {
-  animation: boxPulse 1.5s infinite;
-}
-
-@keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
-}
-.animate-shake {
-  animation: shake 0.4s;
+.animal {
+  font-size: 30px;
+  cursor: grab;
 }
 

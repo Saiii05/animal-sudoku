@@ -1,26 +1,32 @@
 import { Cell, Difficulty } from "../types";
-const BLANK = 0;
-export const isValid = (grid: number[][], row: number, col: number, num: number): boolean => {
-  for (let x = 0; x < 9; x++) if (grid[row][x] === num && x !== col) return false;
-  for (let y = 0; y < 9; y++) if (grid[y][col] === num && y !== row) return false;
-  const startRow = row - (row % 3);
-  const startCol = col - (col % 3);
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      if (grid[i + startRow][j + startCol] === num && (i + startRow !== row || j + startCol !== col)) return false;
-    }
+
+const EMPTY = 0;
+
+function shuffle(arr: number[]) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function isValid(grid: number[][], r: number, c: number, n: number) {
+  for (let i = 0; i < 9; i++) {
+    if (grid[r][i] === n || grid[i][c] === n) return false;
   }
+  const br = Math.floor(r / 3) * 3;
+  const bc = Math.floor(c / 3) * 3;
+  for (let i = 0; i < 3; i++)
+    for (let j = 0; j < 3; j++)
+      if (grid[br + i][bc + j] === n) return false;
   return true;
-};
-const solve = (grid: number[][]): boolean => {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (grid[row][col] === BLANK) {
-        for (let num = 1; num <= 9; num++) {
-          if (isValid(grid, row, col, num)) {
-            grid[row][col] = num;
+}
+
+function solve(grid: number[][]): boolean {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (grid[r][c] === EMPTY) {
+        for (const n of shuffle([1,2,3,4,5,6,7,8,9])) {
+          if (isValid(grid, r, c, n)) {
+            grid[r][c] = n;
             if (solve(grid)) return true;
-            grid[row][col] = BLANK;
+            grid[r][c] = EMPTY;
           }
         }
         return false;
@@ -28,49 +34,39 @@ const solve = (grid: number[][]): boolean => {
     }
   }
   return true;
-};
-export const generateSudoku = (difficulty: Difficulty): { initial: Cell[][], solved: number[][] } => {
-  const grid: number[][] = Array.from({ length: 9 }, () => Array(9).fill(BLANK));
-  for (let i = 0; i < 9; i += 3) fillBox(grid, i, i);
+}
+
+export function generateSudoku(difficulty: Difficulty) {
+  const grid = Array.from({ length: 9 }, () => Array(9).fill(EMPTY));
   solve(grid);
-  const solvedGrid = grid.map(row => [...row]);
-  const attempts = difficulty === 'Easy' ? 30 : difficulty === 'Medium' ? 45 : 55;
-  let count = attempts;
-  while (count > 0) {
-    let row = Math.floor(Math.random() * 9);
-    let col = Math.floor(Math.random() * 9);
-    while (grid[row][col] === BLANK) {
-      row = Math.floor(Math.random() * 9);
-      col = Math.floor(Math.random() * 9);
+
+  const solution = grid.map(r => [...r]);
+
+  let remove =
+    difficulty === "Easy" ? 36 :
+    difficulty === "Medium" ? 46 : 54;
+
+  while (remove > 0) {
+    const r = Math.floor(Math.random() * 9);
+    const c = Math.floor(Math.random() * 9);
+    if (grid[r][c] !== EMPTY) {
+      grid[r][c] = EMPTY;
+      remove--;
     }
-    grid[row][col] = BLANK;
-    count--;
   }
-  const cellGrid: Cell[][] = grid.map((row, rIndex) => 
-    row.map((val, cIndex) => ({
-      row: rIndex,
-      col: cIndex,
-      value: val === 0 ? null : val,
-      solution: solvedGrid[rIndex][cIndex],
-      isGiven: val !== 0,
+
+  const cells: Cell[][] = grid.map((row, r) =>
+    row.map((v, c) => ({
+      row: r,
+      col: c,
+      value: v === EMPTY ? null : v,
+      solution: solution[r][c],
+      isGiven: v !== EMPTY,
       notes: [],
-      isError: false
+      isError: false,
     }))
   );
-  return { initial: cellGrid, solved: solvedGrid };
-};
-const fillBox = (grid: number[][], row: number, col: number) => {
-  let num: number;
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      do { num = Math.floor(Math.random() * 9) + 1; } while (!isSafeInBox(grid, row, col, num));
-      grid[row + i][col + j] = num;
-    }
-  }
-};
-const isSafeInBox = (grid: number[][], row: number, col: number, num: number) => {
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) { if (grid[row + i][col + j] === num) return false; }
-  }
-  return true;
-};
+
+  return { initial: cells };
+}
+

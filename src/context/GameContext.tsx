@@ -1,19 +1,20 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { Cell, GameState, Difficulty } from '../types';
-import { generateSudoku } from '../utils/sudoku';
+import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { GameState, Difficulty } from "../types";
+import { generateSudoku } from "../utils/sudoku";
+import { DEFAULT_ANIMALS } from "../utils/defaults";
 
 type Action =
-  | { type: 'NEW_GAME'; difficulty: Difficulty }
-  | { type: 'SELECT_CELL'; row: number; col: number }
-  | { type: 'INPUT_VALUE'; value: number | null }
-  | { type: 'TICK' };
+  | { type: "NEW_GAME"; difficulty: Difficulty }
+  | { type: "SELECT_CELL"; row: number; col: number }
+  | { type: "INPUT_VALUE"; value: number | null }
+  | { type: "TICK" };
 
 const initialState: GameState = {
   grid: [],
   selectedCell: null,
   history: [],
   historyPointer: 0,
-  difficulty: 'Easy',
+  difficulty: "Easy",
   isSolved: false,
   mistakes: 0,
   timer: 0,
@@ -22,16 +23,17 @@ const initialState: GameState = {
 
 const GameContext = createContext<any>(null);
 
-const reducer = (state: GameState, action: Action): GameState => {
+function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
-    case 'NEW_GAME': {
+    case "NEW_GAME": {
       const { initial } = generateSudoku(action.difficulty);
       return { ...initialState, grid: initial, difficulty: action.difficulty };
     }
-    case 'SELECT_CELL':
+
+    case "SELECT_CELL":
       return { ...state, selectedCell: [action.row, action.col] };
 
-    case 'INPUT_VALUE': {
+    case "INPUT_VALUE": {
       if (!state.selectedCell) return state;
       const [r, c] = state.selectedCell;
       const grid = state.grid.map(row => row.map(cell => ({ ...cell })));
@@ -49,28 +51,29 @@ const reducer = (state: GameState, action: Action): GameState => {
       };
     }
 
-    case 'TICK':
+    case "TICK":
       return { ...state, timer: state.timer + 1 };
 
     default:
       return state;
   }
-};
+}
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (state.grid.length === 0) dispatch({ type: 'NEW_GAME', difficulty: 'Easy' });
+    if (state.grid.length === 0)
+      dispatch({ type: "NEW_GAME", difficulty: "Easy" });
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => dispatch({ type: 'TICK' }), 1000);
+    const id = setInterval(() => dispatch({ type: "TICK" }), 1000);
     return () => clearInterval(id);
   }, []);
 
   return (
-    <GameContext.Provider value={{ state, dispatch }}>
+    <GameContext.Provider value={{ state, dispatch, animals: DEFAULT_ANIMALS }}>
       {children}
     </GameContext.Provider>
   );
