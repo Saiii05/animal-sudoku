@@ -1,32 +1,53 @@
 import { Cell, Difficulty } from "../types";
 
+const SIZE = 9;
+const BOX = 3;
 const EMPTY = 0;
 
-function shuffle(arr: number[]) {
-  return [...arr].sort(() => Math.random() - 0.5);
+function range(n:number){ return Array.from({length:n}, (_,i)=>i) }
+
+function shuffle<T>(arr:T[]){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-function isValid(grid: number[][], r: number, c: number, n: number) {
-  for (let i = 0; i < 9; i++) {
-    if (grid[r][i] === n || grid[i][c] === n) return false;
-  }
-  const br = Math.floor(r / 3) * 3;
-  const bc = Math.floor(c / 3) * 3;
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++)
-      if (grid[br + i][bc + j] === n) return false;
+export function emptyGrid(): Cell[][] {
+  return range(SIZE).map(r => range(SIZE).map(c => ({ row:r, col:c, value:null, solution:0, given:false, error:false })));
+}
+
+function inRow(grid:number[][], r:number, v:number){
+  return grid[r].some(x => x===v);
+}
+function inCol(grid:number[][], c:number, v:number){
+  return grid.some(row => row[c]===v);
+}
+function inBox(grid:number[][], r:number, c:number, v:number){
+  const br = Math.floor(r/BOX)*BOX, bc = Math.floor(c/BOX)*BOX;
+  for(let i=0;i<BOX;i++) for(let j=0;j<BOX;j++) if(grid[br+i][bc+j]===v) return true;
+  return false;
+}
+
+export function isValidMove(grid:number[][], r:number, c:number, v:number){
+  if(v===EMPTY) return true;
+  if(inRow(grid, r, v)) return false;
+  if(inCol(grid, c, v)) return false;
+  if(inBox(grid, r, c, v)) return false;
   return true;
 }
 
-function solve(grid: number[][]): boolean {
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      if (grid[r][c] === EMPTY) {
-        for (const n of shuffle([1,2,3,4,5,6,7,8,9])) {
-          if (isValid(grid, r, c, n)) {
-            grid[r][c] = n;
-            if (solve(grid)) return true;
-            grid[r][c] = EMPTY;
+export function solveGrid(grid:number[][]): boolean {
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      if(grid[r][c]===EMPTY){
+        for(let n=1;n<=9;n++){
+          if(isValidMove(grid, r, c, n)){
+            grid[r][c]=n;
+            if(solveGrid(grid)) return true;
+            grid[r][c]=EMPTY;
           }
         }
         return false;
@@ -36,37 +57,40 @@ function solve(grid: number[][]): boolean {
   return true;
 }
 
-export function generateSudoku(difficulty: Difficulty) {
-  const grid = Array.from({ length: 9 }, () => Array(9).fill(EMPTY));
-  solve(grid);
+export function generate(difficulty:Difficulty='Easy'): Cell[][] {
+  // start with empty numeric grid
+  const g:number[][] = range(SIZE).map(()=>range(SIZE).map(()=>EMPTY));
 
-  const solution = grid.map(r => [...r]);
+  // fill diagonal boxes to reduce backtracking
+  for(let k=0;k<SIZE;k+=BOX){
+    const ids = shuffle([1,2,3,4,5,6,7,8,9]);
+    for(let i=0;i<BOX;i++) for(let j=0;j<BOX;j++) g[k+i][k+j] = ids[i*BOX+j];
+  }
 
-  let remove =
-    difficulty === "Easy" ? 36 :
-    difficulty === "Medium" ? 46 : 54;
+  // solve to get a full board
+  const ok = solveGrid(g);
+  if(!ok) throw new Error('generator failed');
 
-  while (remove > 0) {
-    const r = Math.floor(Math.random() * 9);
-    const c = Math.floor(Math.random() * 9);
-    if (grid[r][c] !== EMPTY) {
-      grid[r][c] = EMPTY;
-      remove--;
+  const solved = g.map(r => r.slice());
+
+  // remove cells to create puzzle
+  let removeCount = difficulty === 'Easy' ? 36 : difficulty === 'Medium' ? 46 : 54;
+  while(removeCount>0){
+    const r = Math.floor(Math.random()*SIZE);
+    const c = Math.floor(Math.random()*SIZE);
+    if(g[r][c] !== EMPTY){
+      g[r][c] = EMPTY;
+      removeCount--;
     }
   }
 
-  const cells: Cell[][] = grid.map((row, r) =>
-    row.map((v, c) => ({
-      row: r,
-      col: c,
-      value: v === EMPTY ? null : v,
-      solution: solution[r][c],
-      isGiven: v !== EMPTY,
-      notes: [],
-      isError: false,
-    }))
-  );
-
-  return { initial: cells };
+  // map to Cell objects
+  return range(SIZE).map(r => range(SIZE).map(c => ({
+    row:r, col:c,
+    value: g[r][c]===EMPTY ? null : g[r][c],
+    solution: solved[r][c],
+    given: g[r][c] !== EMPTY,
+    error: false
+  })));
 }
 

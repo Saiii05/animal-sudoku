@@ -1,18 +1,27 @@
+import React, { useEffect } from "react";
 import { useGame } from "../context/GameContext";
+import confetti from "canvas-confetti";
 
-export const ScoreBoard = () => {
+export default function ScoreBoard(){
   const { state } = useGame();
-  const score = Math.max(0, 10000 - state.timer * 10 - state.mistakes * 500);
+  const score = Math.max(0, 10000 - state.time*10 - state.mistakes*500);
+  const bestKey = `animal-sudoku-best`;
+  const best = Number(localStorage.getItem(bestKey) || 0);
 
-  const best = Number(localStorage.getItem("best-score") || 0);
-  if (state.isSolved && score > best) {
-    localStorage.setItem("best-score", String(score));
-  }
+  useEffect(()=>{
+    if(state.solved){
+      if(score > best) localStorage.setItem(bestKey, String(score));
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+    }
+  }, [state.solved]);
 
   return (
-    <div className="score">
-      ⏱ {state.timer}s | ❌ {state.mistakes} | 🏆 {score} | ⭐ {best}
+    <div className="scorecard">
+      <div>⏱ {state.time}s</div>
+      <div>❌ {state.mistakes}</div>
+      <div>🏆 {score}</div>
+      <div>⭐ {best}</div>
     </div>
   );
-};
+}
 
